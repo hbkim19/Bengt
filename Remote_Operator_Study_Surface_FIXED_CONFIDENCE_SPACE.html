@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RO Control — Remote Operator Study</title>
+  <style>
+    :root { --canvas:#071019; --top:#0c1520; --border:#26313d; --text:#f2f4f6; --muted:#9eaabb; --blue:#619cff; --blue-border:#438dea; --blue-left:#102239; --blue-right:#13283f; --blue-icon:#244f8b; --red:#f06a63; --red-border:#b6463f; --red-left:#26171a; --red-right:#2c1a1d; --red-icon:#853434; --high:#58ca92; --low:#f06a63; }
+    *{box-sizing:border-box} html,body{min-height:100%;width:100%} body{margin:0;background:var(--canvas);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif} button,input,select{font:inherit}
+    .app{min-height:100vh;width:100%;display:grid;place-items:center;padding:22px}.shell{width:min(1536px,100%);min-height:min(1024px,calc(100vh - 44px));padding:16px;background:var(--canvas);border:1px solid var(--border);border-radius:13px;box-shadow:0 22px 70px rgba(0,0,0,.38)}.inner{min-height:calc(min(1024px,calc(100vh - 44px)) - 34px);padding:clamp(24px,2.75vw,42px);background:linear-gradient(180deg,var(--top),var(--canvas));border:1px solid var(--border);border-radius:13px;display:flex;flex-direction:column}
+    h1{margin:0;font-size:clamp(1.7rem,2.75vw,2.25rem);font-weight:400;line-height:1.2}h2{font-size:1.12rem;margin:24px 0 8px}p{max-width:920px;color:#d6dde5;line-height:1.58}.hidden{display:none!important}.muted{color:var(--muted)}.page{max-width:940px;margin:auto 0}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:780px;margin:28px 0}label{display:grid;gap:8px;color:var(--muted)}input,select{width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:8px;background:#08111a;color:var(--text)}input:focus,select:focus,button:focus-visible{outline:3px solid rgba(97,156,255,.38);outline-offset:2px}.actions{display:flex;justify-content:flex-end;gap:12px;margin-top:28px}.button{padding:12px 18px;border:1px solid var(--blue-border);border-radius:8px;background:#163558;color:#eaf2ff;font-weight:650;cursor:pointer}.button:hover{filter:brightness(1.12)}.button.danger{border-color:#98433f;background:#3a2022;color:#ffd6d1}.error{min-height:1.25rem;margin-top:8px;color:#ff9b94}.consent-box{margin-top:26px;padding:18px 20px;border:1px solid var(--border);border-radius:10px;background:rgba(4,10,15,.26)}.consent-choice{display:flex;align-items:flex-start;gap:12px;color:#d6dde5;cursor:pointer}.consent-choice input,.radio-option input{width:18px;height:18px;margin:3px 0 0;padding:0;accent-color:var(--blue)}.question{max-width:780px;margin:30px 0}.question-title{display:block;margin-bottom:13px;color:var(--text);font-size:1.04rem}.radio-options{display:flex;flex-wrap:wrap;gap:11px 18px}.radio-option{display:flex;align-items:center;gap:8px;color:#d6dde5;cursor:pointer}.radio-option input{margin:0}
+    .topline{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:26px}.trial-title-wrap{display:flex;align-items:center;gap:16px;min-width:0}.trial-title{font-size:clamp(1.75rem,3vw,2.25rem);font-weight:400}.trial-count{color:var(--muted);font-size:.95rem;white-space:nowrap}.camera{position:relative;width:100%;height:clamp(350px,48vw,587px);min-height:300px;overflow:hidden;border-radius:30px;background:#101a23}.scenario-image{width:100%;height:100%}.scenario-image img{display:block;width:100%;height:100%;object-fit:cover}.camera-info{position:absolute;top:23px;left:23px;z-index:2;min-width:183px;padding:13px 17px;border:1px solid rgba(181,200,220,.3);border-radius:12px;background:rgba(18,29,40,.84);color:#bfcad5;font-size:16px;line-height:2.3}.glyph{display:inline-block;width:31px}.confidence{position:absolute;top:22px;right:22px;z-index:2;padding:9px 14px;border-radius:10px;background:rgba(6,15,23,.84);font-size:14px;font-weight:750;letter-spacing:.06em}.confidence.high{border:1px solid rgba(88,202,146,.65);color:var(--high)}.confidence.low{border:1px solid rgba(240,106,99,.65);color:var(--low)}.overlay{position:absolute;inset:0;z-index:3;display:grid;place-items:center;background:rgba(3,10,16,.34)}.psi{width:148px;height:148px;border:1px solid #6ea5ff;border-radius:50%;background:radial-gradient(circle at 36% 30%,#386fb6,#183760 69%);box-shadow:0 0 0 11px rgba(76,145,255,.12),0 13px 35px rgba(0,0,0,.42);color:#e7f0ff;font-size:82px;font-weight:300;line-height:1;cursor:pointer}.psi:hover{filter:brightness(1.1);transform:scale(1.045)}.psi-label{position:absolute;transform:translateY(110px);font-size:15px;letter-spacing:.04em}.countdown{font-size:110px;font-weight:350;text-shadow:0 5px 20px rgba(0,0,0,.48)}.countdown-label{position:absolute;transform:translateY(90px);color:#d4dee8;font-size:15px;letter-spacing:.05em;text-transform:uppercase}.decision-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:auto;padding-top:82px}.decision{min-height:131px;padding:24px 38px;border-radius:15px;display:flex;align-items:center;text-align:left;cursor:pointer}.decision:disabled{opacity:.47;cursor:not-allowed}.confirm{border:1px solid var(--blue-border);background:linear-gradient(90deg,var(--blue-left),var(--blue-right))}.stop{border:1px solid var(--red-border);background:linear-gradient(90deg,var(--red-left),var(--red-right))}.icon{width:80px;height:80px;margin-right:67px;display:grid;place-items:center;flex:0 0 auto;border-radius:50%}.confirm .icon{border:1px solid #5b9efb;background:var(--blue-icon);color:#f1f7ff;font-size:54px}.stop .icon{border:1px solid #e06861;background:var(--red-icon);color:#ffd0ca;font-size:30px}.decision-main{display:block;font-size:clamp(1.35rem,2.3vw,1.88rem);line-height:1}.confirm .decision-main{color:var(--blue)}.stop .decision-main{color:var(--red)}.system-confidence{display:inline-flex;align-items:center;gap:9px;padding:7px 11px;border:1px solid #438dea;border-radius:7px;background:rgba(36,79,139,.34);color:#eaf2ff;font-size:clamp(1.05rem,1.65vw,1.32rem);font-weight:800;letter-spacing:.045em;box-shadow:inset 3px 0 0 #619cff}.confidence-level{color:#8db8ff;font-weight:900}.confidence-percent{color:#fff;font-weight:900}.decision-sub{display:block;margin-top:10px;color:var(--muted);font-size:clamp(.93rem,1.55vw,1.25rem)}.rating{width:min(900px,100%);margin:auto}.rating-block{margin-top:38px}.rating-q{font-size:1.25rem}.sart-statement{font-size:1.22rem;font-weight:650;color:var(--text);margin-bottom:8px}.rating>p{font-size:1.35rem;line-height:1.5}.sart-scale-row{display:grid;grid-template-columns:minmax(190px,1fr) minmax(320px,2.2fr) minmax(190px,1fr);align-items:center;gap:18px;margin-top:12px}.sart-endpoint{color:var(--muted);font-size:1rem;line-height:1.4}.sart-endpoint.right{text-align:right}.sart-scale-row input[type=range]{width:100%;padding:0;accent-color:var(--blue)}input[type=range]{padding:0;accent-color:var(--blue)}.rating-value{margin-top:8px;color:var(--blue);font-weight:700;font-size:1.22rem;text-align:center}.complete{text-align:center;max-width:700px;margin:auto}.choice-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:34px}.button.secondary{border-color:var(--border);background:#111c27;color:#dbe4ed}.tlx-grid{display:grid;gap:26px;margin-top:28px}.tlx-item{padding:18px 20px;border:1px solid var(--border);border-radius:10px;background:rgba(4,10,15,.22)}.tlx-head{font-size:1.08rem;font-weight:650;margin-bottom:6px}.tlx-question{font-size:1.02rem;color:#d6dde5;line-height:1.4;margin-bottom:12px}.tlx-labels{display:flex;justify-content:space-between;gap:18px;color:var(--muted);font-size:.96rem;margin-bottom:8px}.tlx-item input[type=range]{width:100%}.tlx-value{text-align:center;margin-top:7px;color:var(--blue);font-weight:700}
+    /* Surface Pro (Model 1796 / Surface Pro 5): native panel 2736×1824, 3:2.
+       Browsers commonly expose a smaller CSS viewport because of Windows display scaling,
+       so this layout is optimized for landscape use around 1368×912 CSS px while remaining responsive. */
+    @media (min-width:1100px) and (max-width:1500px) and (min-aspect-ratio:3/2) and (max-aspect-ratio:8/5){
+      .app{padding:10px}
+      .shell{width:min(1368px,100%);min-height:calc(100vh - 20px);padding:10px}
+      .inner{min-height:calc(100vh - 42px);padding:22px 28px}
+      .topline{margin-bottom:14px}
+      .camera{height:clamp(330px,45vh,470px);min-height:300px;border-radius:22px}
+      .decision-row{padding-top:24px;gap:14px}
+      .decision{min-height:100px;padding:16px 24px}
+      .icon{width:62px;height:62px;margin-right:30px}
+      .confirm .icon{font-size:42px}
+      .stop .icon{font-size:25px}
+      .rating{width:min(1050px,100%);margin:0 auto}
+      .rating-block{margin-top:22px}
+      .rating>p{font-size:1.2rem;margin-top:0}
+      .sart-statement{font-size:1.12rem}
+      .sart-scale-row{grid-template-columns:minmax(180px,1fr) minmax(350px,2.4fr) minmax(180px,1fr);gap:14px}
+      .sart-endpoint{font-size:.92rem}
+      .tlx-grid{gap:12px;margin-top:16px}
+      .tlx-item{padding:10px 16px}
+      .tlx-head{font-size:1rem;margin-bottom:2px}
+      .tlx-question{font-size:.94rem;margin-bottom:6px}
+      .tlx-labels{font-size:.88rem;margin-bottom:3px}
+      .tlx-value{margin-top:2px}
+      .actions{margin-top:16px}
+    }
+    @media(max-width:750px){.app{padding:0}.shell{min-height:100vh;padding:10px;border-radius:0}.inner{min-height:calc(100vh - 22px);padding:22px}.form-grid,.decision-row{grid-template-columns:1fr}.decision-row{padding-top:28px}.decision{min-height:98px;padding:16px}.icon{width:58px;height:58px;margin-right:20px}.camera{border-radius:18px}.camera-info{transform:scale(.78);transform-origin:top left}}
+  
+    .decision-confidence-block{margin-top:38px;padding-top:28px;border-top:1px solid var(--border)}
+    .trust-grid{display:grid;gap:18px;margin-top:22px}
+    .trust-item{padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:rgba(4,10,15,.2)}
+    .trust-question{font-size:1.03rem;line-height:1.35;margin-bottom:10px}
+    .trust-labels{display:flex;justify-content:space-between;gap:20px;color:var(--muted);font-size:.86rem;margin-bottom:6px}
+    .trust-value{text-align:center;color:var(--blue);font-weight:700;font-size:1.02rem;margin-top:6px}
+
+    .tia-grid{display:grid;gap:14px;margin-top:20px}
+    .tia-item{padding:13px 15px;border:1px solid var(--border);border-radius:10px;background:rgba(4,10,15,.2)}
+    .tia-question{font-size:1rem;line-height:1.35;margin-bottom:10px}
+    .tia-options{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;align-items:end}
+    .tia-options label{display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;color:var(--muted);font-size:.78rem;line-height:1.15;cursor:pointer}
+    .tia-options input[type=radio]{width:20px;height:20px;accent-color:var(--blue)}
+    @media(max-width:1000px){.tia-options label{font-size:.7rem}.tia-item{padding:10px 12px}.tia-grid{gap:10px}}
+
+    .button:disabled{opacity:.45;cursor:not-allowed;filter:none}
+
+    /* Surface Pro 1796: always show the complete scenario image */
+    .camera-frame,
+    .camera,
+    .scenario-image-wrap,
+    .video-frame {
+      overflow: hidden !important;
+    }
+
+    .camera-frame img,
+    .camera img,
+    .scenario-image,
+    .scenario-image-wrap img,
+    .video-frame img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain !important;
+      object-position: center center !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
+    }
+
+    /* Surface Pro landscape (3:2). Keep enough vertical space for controls. */
+    @media (min-width: 1000px) and (max-aspect-ratio: 1.75/1) {
+      .camera-frame,
+      .camera,
+      .scenario-image-wrap,
+      .video-frame {
+        height: min(58vh, 650px) !important;
+        min-height: 0 !important;
+        max-height: 58vh !important;
+      }
+    }
+
+
+    /* Larger Surface Pro scenario view: full image, maximum practical size */
+    @media (min-width: 1000px) and (max-aspect-ratio: 1.75/1) {
+      .camera-frame,
+      .camera,
+      .scenario-image-wrap,
+      .video-frame {
+        height: min(70vh, 820px) !important;
+        max-height: 70vh !important;
+        min-height: 0 !important;
+      }
+
+      .camera-frame img,
+      .camera img,
+      .scenario-image,
+      .scenario-image-wrap img,
+      .video-frame img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+        object-position: center center !important;
+      }
+    }
+
+
+    /* Surface Pro landscape: image ends approx. 2.5 cm above action buttons */
+    @media (min-width: 1000px) and (max-aspect-ratio: 1.75/1) {
+      .trial,
+      .scenario,
+      .hmi {
+        min-height: calc(100vh - 110px);
+      }
+
+      .camera-frame,
+      .camera,
+      .scenario-image-wrap,
+      .video-frame {
+        height: min(72vh, 840px) !important;
+        max-height: 72vh !important;
+        margin-bottom: 94px !important; /* ≈ 2.5 cm at CSS 96 dpi */
+      }
+
+      .camera-frame img,
+      .camera img,
+      .scenario-image,
+      .scenario-image-wrap img,
+      .video-frame img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+        object-position: center center !important;
+      }
+
+      .decision-row,
+      .decision-buttons,
+      .scenario-actions,
+      .hmi-actions {
+        margin-top: 0 !important;
+      }
+    }
+
+
+    /* Surface Pro landscape: fit complete HMI without oversizing */
+    @media (min-width: 1000px) and (max-aspect-ratio: 1.75/1) {
+      .trial,
+      .scenario,
+      .hmi {
+        min-height: 0 !important;
+      }
+
+      .camera-frame,
+      .camera,
+      .scenario-image-wrap,
+      .video-frame {
+        height: min(60vh, 660px) !important;
+        max-height: 60vh !important;
+        min-height: 0 !important;
+        margin-bottom: 28px !important;
+      }
+
+      .camera-frame img,
+      .camera img,
+      .scenario-image,
+      .scenario-image-wrap img,
+      .video-frame img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+        object-position: center center !important;
+      }
+
+      .decision-row,
+      .decision-buttons,
+      .scenario-actions,
+      .hmi-actions {
+        margin-top: 0 !important;
+      }
+    }
+
+
+    /* Fixed header geometry: confidence space is always reserved */
+    .topline{
+      min-height:58px !important;
+      align-items:center !important;
+    }
+    .trial-title-wrap{
+      min-width:360px !important;
+      min-height:46px !important;
+      display:flex !important;
+      align-items:center !important;
+      justify-content:flex-start !important;
+    }
+    .system-confidence{
+      display:inline-flex;
+      align-items:center;
+      min-height:42px;
+      white-space:nowrap;
+    }
+
+    /* When there is no confidence display, keep the same empty space */
+    .trial-title-wrap:empty::before{
+      content:"";
+      display:block;
+      width:360px;
+      height:42px;
+      visibility:hidden;
+    }
+
+    @media(max-width:900px){
+      .trial-title-wrap{
+        min-width:280px !important;
+      }
+      .trial-title-wrap:empty::before{
+        width:280px;
+      }
+    }
+
+</style>
+</head>
+<body>
+  <main class="app" id="app"></main>
+  <script>
+    /*
+      Scenario images are loaded from the relative folder "Szenarien" next to this HTML file.
+      Every image—including the two practice images—uses the same 5-second countdown after Ψ is clicked.
+      Expected files: Beispiel-1.png through Beispiel-4.png in the Szenarien folder.
+    */
+    const IMAGE_FILES = {
+      practice1: 'Beispiel-1.png',
+      practice2: 'Beispiel-2.png',
+      practice3: 'Beispiel-3.png',
+      leftTurn1: 'Left-Turn-1.png',
+      redLight1: 'Red-Light-1.png',
+      roundabout1: 'Roundabout-1.png',
+      right1: 'Right-1.png',
+      leftTurn2: 'Left-Turn-2.png',
+      redLight2: 'Red-Light-2.png',
+      roundabout2: 'Roundabout-2.png',
+      right2: 'Right-2.png'
+    };
+    const app=document.getElementById('app');
+    const data={participantId:'',condition:'',demographics:{},index:0,responses:[],nasaTlx:[],trustRatings:[],randomizedBlocks:{1:false,2:false}};
+    const TOTAL_SCENARIOS=11;
+    const TOTAL_PRACTICE=3;
+    const TOTAL_STUDY=8;
+    const trials=[
+      {id:'P1',type:'practice',title:'Practice scenario 1',imageKey:'practice1',logic:'Practice 1',confidence:null},
+      {id:'P2',type:'practice',title:'Practice scenario 2',imageKey:'practice2',logic:'Practice 2',confidence:null},
+      {id:'P3',type:'practice',title:'Practice scenario 3',imageKey:'practice3',logic:'Practice 3',confidence:null},
+      {id:'S1',type:'main',block:1,title:'Traffic situation',imageKey:'leftTurn1',logic:'Left-Turn-1',confidence:null},
+      {id:'S2',type:'main',block:1,title:'Traffic situation',imageKey:'redLight1',logic:'Red-Light-1',confidence:null},
+      {id:'S3',type:'main',block:1,title:'Traffic situation',imageKey:'roundabout1',logic:'Roundabout-1',confidence:null},
+      {id:'S4',type:'main',block:1,title:'Traffic situation',imageKey:'right1',logic:'Right-1',confidence:null},
+      {id:'P4',type:'practice2',title:'Confidence example — high',imageKey:'practice2',logic:'Confidence example high',confidence:80,confidenceDisplay:'&gt; 80%',confidenceLevel:'HIGH'},
+      {id:'P5',type:'practice2',title:'Confidence example — low',imageKey:'practice2',logic:'Confidence example low',confidence:20,confidenceDisplay:'&lt; 20%',confidenceLevel:'LOW'},
+      {id:'S5',type:'main',block:2,title:'Traffic situation',imageKey:'leftTurn2',logic:'Left-Turn-2',confidenceByCondition:{A:'HIGH',B:'LOW'}},
+      {id:'S6',type:'main',block:2,title:'Traffic situation',imageKey:'redLight2',logic:'Red-Light-2',confidenceByCondition:{A:'LOW',B:'HIGH'}},
+      {id:'S7',type:'main',block:2,title:'Traffic situation',imageKey:'roundabout2',logic:'Roundabout-2',confidenceByCondition:{A:'HIGH',B:'LOW'}},
+      {id:'S8',type:'main',block:2,title:'Traffic situation',imageKey:'right2',logic:'Right-2',confidenceByCondition:{A:'LOW',B:'HIGH'}}
+    ];
+
+    function shuffleArray(arr){
+      for(let i=arr.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]]=[arr[j],arr[i]];
+      }
+      return arr;
+    }
+    function randomizeBlock(block){
+      if(data.randomizedBlocks[block])return;
+      const positions=[];
+      const blockTrials=[];
+      trials.forEach((t,i)=>{if(t.type==='main'&&t.block===block){positions.push(i);blockTrials.push(t);}});
+      shuffleArray(blockTrials);
+      positions.forEach((pos,i)=>{trials[pos]=blockTrials[i];});
+      data.randomizedBlocks[block]=true;
+    }
+    function firstIndexOfBlock(block){
+      return trials.findIndex(t=>t.type==='main'&&t.block===block);
+    }
+    function isLastMainTrialOfBlock(index){
+      const t=trials[index];
+      if(!t||t.type!=='main')return false;
+      const next=trials[index+1];
+      return !next || next.type!=='main' || next.block!==t.block;
+    }
+    function filenameForTrial(t){
+      return IMAGE_FILES[t.imageKey] || t.logic || t.id;
+    }
+    function safeFilenameKey(name){
+      return String(name).replace(/[^A-Za-z0-9._-]+/g,'_');
+    }
+    const esc=t=>String(t).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+    const shell=c=>`<section class="shell"><div class="inner">${c}</div></section>`;
+    function confidenceForTrial(t){
+      // Practice confidence examples: fixed display, independent of study condition.
+      if(t.id==='P4') return {value:80,display:'&gt; 80%',level:'HIGH'};
+      if(t.id==='P5') return {value:20,display:'&lt; 20%',level:'LOW'};
+
+      // Block 1 never shows confidence.
+      if(t.type==='main' && t.block===1) return null;
+
+      // Block 2 confidence is permanently tied to the scenario filename.
+      // Randomization changes presentation order only; it never changes this mapping.
+      if(t.type==='main' && t.block===2){
+        const file=filenameForTrial(t);
+        const conditionA={
+          'Left-Turn-2.png':'HIGH',
+          'Red-Light-2.png':'LOW',
+          'Roundabout-2.png':'HIGH',
+          'Right-2.png':'LOW'
+        };
+        const conditionB={
+          'Left-Turn-2.png':'LOW',
+          'Red-Light-2.png':'HIGH',
+          'Roundabout-2.png':'LOW',
+          'Right-2.png':'HIGH'
+        };
+        const level=(data.condition==='A'?conditionA:conditionB)[file];
+        if(level==='HIGH') return {value:80,display:'&gt; 80%',level:'HIGH'};
+        if(level==='LOW') return {value:20,display:'&lt; 20%',level:'LOW'};
+      }
+      return null;
+    }
+    function pageAccess(){app.innerHTML=shell(`<section class="page"><h1>Study access</h1><p>Enter the participant number and study condition provided by the researcher.</p><div class="form-grid"><label>Participant number<input id="pid" placeholder="e.g., DE01" maxlength="20" required></label><label>Study condition<select id="condition" required><option value="">Select condition</option><option value="A">Condition A</option><option value="B">Condition B</option></select></label></div><div class="error" id="accessError"></div><div class="actions"><button class="button" id="continue" disabled>Continue</button></div></section>`);const pid=document.getElementById('pid'),condition=document.getElementById('condition'),btn=document.getElementById('continue'),err=document.getElementById('accessError');const validate=()=>{const ok=pid.value.trim()!==''&&condition.value!=='';btn.disabled=!ok;if(ok)err.textContent='';};pid.addEventListener('input',validate);condition.addEventListener('change',validate);btn.onclick=()=>{const p=pid.value.trim(),c=condition.value;if(!p||!c){err.textContent='Please enter the participant number and select a study condition before continuing.';btn.disabled=true;return;}data.participantId=p;data.condition=c;pageConsent();};validate();}
+    function pageConsent(){app.innerHTML=shell(`<section class="page"><h1>Participant Information and Consent</h1><p><strong>Welcome, and thank you very much for participating in this study.</strong></p><p>This study investigates the performance of remote operators supervising automated vehicle fleets across different countries. You will evaluate static traffic situations through a digital interface and make decisions concerning a vehicle’s planned route.</p><h2>Voluntary participation</h2><p>Your participation is entirely voluntary. You may stop the study at any time, without giving a reason and without further explanation.</p><h2>Data protection and anonymity</h2><p>The study data will be stored locally on servers at Technische Hochschule Ingolstadt (THI) and anonymized using a consecutive identification number (e.g. P1), which does not allow any conclusions to be drawn about individuals.</p><div class="consent-box"><label class="consent-choice"><input id="consent" type="checkbox"><span>I have read and understood the information above and agree to participate in this study.</span></label><div class="error" id="consentError"></div><div class="actions"><button class="button danger" id="decline">I do not agree</button><button class="button" id="agree">I agree</button></div></div></section>`);document.getElementById('decline').onclick=()=>message('Participation declined','Thank you for your time. No study response has been recorded.');document.getElementById('agree').onclick=()=>{if(!document.getElementById('consent').checked){document.getElementById('consentError').textContent='Please confirm your consent before continuing.';return;}pageDemographics();};}
+    function pageDemographics(){app.innerHTML=shell(`<section class="page"><h1>Demographic information</h1><p>Please answer the following questions.</p><div class="form-grid"><label>Age<input id="age" type="number" min="0" max="120" placeholder="Years" required></label><label>Gender<select id="gender" required><option value="">Select option</option><option value="male">Male</option><option value="female">Female</option><option value="diverse">Diverse</option><option value="not specified">Not specified</option></select></label></div><section class="question"><span class="question-title">How many miles do you drive on average per year?</span><input id="annualMiles" type="number" min="0" step="1" inputmode="numeric" placeholder="Miles per year" required></section><section class="question"><span class="question-title">What percentage of that is on unfamiliar routes?</span><input id="unfamiliarPercent" type="number" min="0" max="100" step="1" inputmode="numeric" placeholder="0–100 %" required></section><section class="question"><span class="question-title">Have you ever driven on public roads in Germany?</span><div class="radio-options"><label class="radio-option"><input type="radio" name="germany" value="yes" required>Yes</label><label class="radio-option"><input type="radio" name="germany" value="no" required>No</label></div><div id="germanyKmWrap" class="hidden" style="margin-top:18px"><label>Approximately how many kilometers have you driven on public roads in Germany?<input id="germanyKm" type="number" min="0" step="1" inputmode="numeric" placeholder="Approximate kilometers"></label></div></section><div class="error" id="demoError"></div><div class="actions"><button class="button" id="start">Start study</button></div></section>`);document.querySelectorAll('input[name=germany]').forEach(r=>r.addEventListener('change',()=>{const wrap=document.getElementById('germanyKmWrap');wrap.classList.toggle('hidden',r.value!=='yes'||!r.checked);if(r.value==='no'&&r.checked)document.getElementById('germanyKm').value='';}));document.getElementById('start').onclick=()=>{const age=document.getElementById('age').value,gender=document.getElementById('gender').value,annualMiles=document.getElementById('annualMiles').value,unfamiliarPercent=document.getElementById('unfamiliarPercent').value,germany=document.querySelector('input[name=germany]:checked')?.value,germanyKm=document.getElementById('germanyKm').value;const invalid=age===''||!gender||annualMiles===''||unfamiliarPercent===''||!germany||(germany==='yes'&&germanyKm==='');if(invalid){document.getElementById('demoError').textContent='Please answer all questions before continuing.';return;}if(Number(age)<0||Number(age)>120||Number(annualMiles)<0||Number(unfamiliarPercent)<0||Number(unfamiliarPercent)>100||(germany==='yes'&&Number(germanyKm)<0)){document.getElementById('demoError').textContent='Please enter valid values in all fields.';return;}data.demographics={age:Number(age),gender,annual_miles:Number(annualMiles),unfamiliar_routes_percent:Number(unfamiliarPercent),has_driven_public_roads_germany:germany,approx_km_driven_public_roads_germany:germany==='yes'?Number(germanyKm):''};pageTrial();};}
+    function pageTrial(){const t=trials[data.index],practice=t.type==='practice',practice2=t.type==='practice2',mainNo=trials.slice(0,data.index+1).filter(x=>x.type==='main').length,conf=confidenceForTrial(t);const trialCount=practice?`Practice trial ${trials.slice(0,data.index+1).filter(x=>x.type==='practice').length} / ${TOTAL_PRACTICE}`:practice2?`Confidence example ${trials.slice(0,data.index+1).filter(x=>x.type==='practice2').length} / 2`:`Trial ${mainNo} / ${TOTAL_STUDY}`;app.innerHTML=shell(`<div class="topline"><div class="trial-title-wrap">${conf?`<span class="system-confidence hidden" id="systemConfidence">SYSTEM CONFIDENCE <span class="confidence-percent">${conf.display}</span> <span class="confidence-level">${conf.level}</span></span>`:''}</div><div class="trial-count">${trialCount}</div></div><section class="camera"><div class="scenario-image hidden" id="scenario"><img id="scenarioImg" alt="Traffic scenario"></div><div class="overlay" id="overlay"><button class="psi" id="psi" aria-label="Start scenario">Ψ</button><div class="psi-label">TAP TO START</div></div></section><section class="decision-row"><button class="decision confirm" id="confirm" disabled><span class="icon">✓</span><span><span class="decision-main">CONFIRM ROUTE</span><span class="decision-sub">Authorize selected manoeuvre</span></span></button><button class="decision stop" id="stop" disabled><span class="icon">■</span><span><span class="decision-main">STOP VEHICLE</span><span class="decision-sub">Initiate controlled stop</span></span></button></section>`);
+      const img=document.getElementById('scenarioImg');img.src=IMAGE_FILES[t.imageKey];img.onerror=()=>{document.getElementById('scenario').innerHTML='<div style="height:100%;display:grid;place-items:center;color:#fff;padding:30px;text-align:center">Bild nicht gefunden: '+esc(IMAGE_FILES[t.imageKey])+'<br><small>Please make sure the image file is in the same folder as this HTML file.</small></div>';};document.getElementById('psi').addEventListener('click',startCountdown,{once:true});}
+    function startCountdown(){const overlay=document.getElementById('overlay');let n=5;overlay.innerHTML=`<div class="countdown" id="count">${n}</div><div class="countdown-label">Scenario starting</div>`;const timer=setInterval(()=>{n--;const el=document.getElementById('count');if(n>0&&el)el.textContent=n;if(n===0){clearInterval(timer);activate();}},1000);}
+    function activate(){document.getElementById('overlay').remove();document.getElementById('scenario').classList.remove('hidden');document.getElementById('systemConfidence')?.classList.remove('hidden');const c=document.getElementById('confirm'),s=document.getElementById('stop');c.disabled=false;s.disabled=false;const onset=performance.now();c.addEventListener('click',()=>choose('CONFIRM_ROUTE',onset),{once:true});s.addEventListener('click',()=>choose('STOP_VEHICLE',onset),{once:true});}
+    function choose(decision,onset){document.getElementById('confirm').disabled=true;document.getElementById('stop').disabled=true;pageSART(decision,Math.round(performance.now()-onset));}
+    function pageSART(decision,rt){const t=trials[data.index];const isLastPractice=t.id==='P3';const isLastConfidenceExample=t.id==='P5';const isEndBlock=t.type==='main'&&isLastMainTrialOfBlock(data.index);const nextLabel=(isLastPractice||isLastConfidenceExample)?'Continue':(isEndBlock?'Continue to NASA-TLX':'Start next scenario');app.innerHTML=shell(`<section class="rating"><p>Please rate the traffic situation you just evaluated.</p><div class="rating-block"><div class="sart-statement">The situation was</div><div class="sart-scale-row"><span class="sart-endpoint">Very stable; Simple and straight forward; Few variables changing</span><input id="sartDemand" type="range" min="1" max="11" value="6"><span class="sart-endpoint right">Unstable, changes suddenly; Many interrelated components; Many variables changing</span></div><div class="rating-value" id="dval">6 / 11</div></div><div class="rating-block"><div class="sart-statement">Attention, my effort was</div><div class="sart-scale-row"><span class="sart-endpoint">Low alertness; Focused on one aspect; Much spare capacity</span><input id="sartSupply" type="range" min="1" max="11" value="6"><span class="sart-endpoint right">High alertness; Concentrating on many aspects; No spare capacity</span></div><div class="rating-value" id="sval">6 / 11</div></div><div class="rating-block"><div class="sart-statement">My understanding of the situation was</div><div class="sart-scale-row"><span class="sart-endpoint">Fully informed and full understanding; Very familiar situation</span><input id="sartUnderstanding" type="range" min="1" max="11" value="6"><span class="sart-endpoint right">Very limited informed/understanding; Very novel situation</span></div><div class="rating-value" id="suval">6 / 11</div></div><div class="rating-block decision-confidence-block"><div class="sart-statement">How confident are you in the decision you just made?</div><div class="sart-scale-row"><span class="sart-endpoint">Not at all confident</span><input id="decisionConfidence" type="range" min="1" max="11" value="6"><span class="sart-endpoint right">Extremely confident</span></div><div class="rating-value" id="dcval">6 / 11</div></div><div class="actions"><button class="button" id="continueSART">${nextLabel}</button></div></section>`);const d=document.getElementById('sartDemand'),s=document.getElementById('sartSupply'),u=document.getElementById('sartUnderstanding'),dc=document.getElementById('decisionConfidence');d.oninput=()=>document.getElementById('dval').textContent=`${d.value} / 11`;s.oninput=()=>document.getElementById('sval').textContent=`${s.value} / 11`;u.oninput=()=>document.getElementById('suval').textContent=`${u.value} / 11`;dc.oninput=()=>document.getElementById('dcval').textContent=`${dc.value} / 11`;document.getElementById('continueSART').onclick=()=>{const sart={sart_demand_1_11:+d.value,sart_supply_1_11:+s.value,sart_understanding_1_11:+u.value,decision_confidence_1_11:+dc.value};saveTrial(decision,rt,sart,'','');advanceTrial();};}
+    function pageStudyReady(){app.innerHTML=shell(`<section class="complete"><h1>Examples complete</h1><p>You have completed the three example scenarios.</p><div class="choice-actions"><button class="button" id="startStudy">Start the study</button><button class="button secondary" id="repeatExamples">Show examples again</button></div></section>`);document.getElementById('startStudy').onclick=()=>{randomizeBlock(1);data.index=firstIndexOfBlock(1);pageTrial();};document.getElementById('repeatExamples').onclick=()=>{data.responses=data.responses.filter(r=>r.trial_type!=='practice');data.index=trials.findIndex(t=>t.id==='P1');pageTrial();};}
+    function pageNASA(block){const currentBlock=block||trials[data.index]?.block||1;app.innerHTML=shell(`<section class="rating"><h1>NASA-TLX</h1><p>Please rate your workload during the four study scenarios you just completed.</p><div class="tlx-grid">${tlxItem('mental','Mental Demand','How mentally demanding was the task?','Very Low','Very High')}${tlxItem('physical','Physical Demand','How physically demanding was the task?','Very Low','Very High')}${tlxItem('temporal','Temporal Demand','How hurried or rushed was the pace of the task?','Very Low','Very High')}${tlxItem('performance','Performance','How successful were you in accomplishing what you were asked to do?','Perfect','Failure')}${tlxItem('effort','Effort','How hard did you have to work to accomplish your level of performance?','Very Low','Very High')}${tlxItem('frustration','Frustration','How insecure, discouraged, irritated, stressed, and annoyed were you?','Very Low','Very High')}</div><div class="actions"><button class="button" id="submitTLX">Continue</button></div></section>`);['mental','physical','temporal','performance','effort','frustration'].forEach(k=>{const el=document.getElementById('tlx_'+k),out=document.getElementById('tlx_'+k+'_value');el.oninput=()=>out.textContent=el.value+' / 20';});document.getElementById('submitTLX').onclick=()=>{const keys=['mental','physical','temporal','performance','effort','frustration'];const vals=Object.fromEntries(keys.map(k=>[k,+document.getElementById('tlx_'+k).value]));const raw=(Object.values(vals).reduce((a,b)=>a+b,0)/6);data.nasaTlx.push({block:currentBlock,...vals,raw_tlx_mean:raw});data.responses.push({record_type:'nasa_tlx',participant_id:data.participantId,assigned_condition:data.condition,...data.demographics,block:currentBlock,nasa_tlx_mental_demand_1_20:vals.mental,nasa_tlx_physical_demand_1_20:vals.physical,nasa_tlx_temporal_demand_1_20:vals.temporal,nasa_tlx_performance_1_20:vals.performance,nasa_tlx_effort_1_20:vals.effort,nasa_tlx_frustration_1_20:vals.frustration,nasa_tlx_raw_mean_1_20:raw,recorded_at:new Date().toISOString()});pageTrust(currentBlock);};}
+    function pageSecondSessionReady(){app.innerHTML=shell(`<section class="complete"><h1>Second session</h1><p>You have completed the confidence examples.</p><div class="choice-actions"><button class="button" id="startSecondSession">Start second session</button><button class="button secondary" id="repeatConfidenceExamples">Show examples again</button></div></section>`);document.getElementById('startSecondSession').onclick=()=>{randomizeBlock(2);data.index=firstIndexOfBlock(2);pageTrial();};document.getElementById('repeatConfidenceExamples').onclick=()=>{data.responses=data.responses.filter(r=>r.trial_type!=='practice2');data.index=trials.findIndex(t=>t.id==='P4');pageTrial();};}
+    function pageTrust(block){const items=[
+['interpret','The system is capable of interpreting situations correctly.',false],
+['reliable','The system works reliably.',false],
+['malfunction','A system malfunction is likely.',true],
+['complicated','The system is capable of taking over complicated tasks.',false],
+['errors','The system might make sporadic errors.',true],
+['capabilities','I am confident about the system’s capabilities.',false],
+['trust','I trust the system.',false],
+['rely','I can rely on the system.',false]
+];const rows=items.map(([id,q])=>`<div class="tia-item"><div class="tia-question">${q}</div><div class="tia-options">${[['1','Strongly disagree'],['2','Rather disagree'],['3','Neither disagree nor agree'],['4','Rather agree'],['5','Strongly agree']].map(([v,l])=>`<label><span>${l}</span><input type="radio" name="tia_${id}" value="${v}"></label>`).join('')}</div></div>`).join('');app.innerHTML=shell(`<section class="rating"><h1>Trust in Automation</h1><p>Please rate your experience with the system during the session you just completed.</p><div class="tia-grid">${rows}</div><div class="error" id="tiaError"></div><div class="actions"><button class="button" id="submitTrust">Continue</button></div></section>`);document.getElementById('submitTrust').onclick=()=>{const missing=items.some(([id])=>!document.querySelector(`input[name="tia_${id}"]:checked`));if(missing){document.getElementById('tiaError').textContent='Please answer all statements before continuing.';return;}const vals=Object.fromEntries(items.map(([id])=>[id,+document.querySelector(`input[name="tia_${id}"]:checked`).value]));const rc=[vals.interpret,vals.reliable,6-vals.malfunction,vals.complicated,6-vals.errors,vals.capabilities];const trust=[vals.trust,vals.rely];data.trustRatings.push({block,...vals,reliability_competence_mean:rc.reduce((a,b)=>a+b,0)/rc.length,trust_in_automation_mean:trust.reduce((a,b)=>a+b,0)/trust.length});data.responses.push({record_type:'tia',participant_id:data.participantId,assigned_condition:data.condition,...data.demographics,block,tia_interpreting_1_5:vals.interpret,tia_reliable_1_5:vals.reliable,tia_malfunction_1_5:vals.malfunction,tia_complicated_tasks_1_5:vals.complicated,tia_sporadic_errors_1_5:vals.errors,tia_capabilities_1_5:vals.capabilities,tia_trust_1_5:vals.trust,tia_rely_1_5:vals.rely,tia_reliability_competence_mean:rc.reduce((a,b)=>a+b,0)/rc.length,tia_trust_in_automation_mean:trust.reduce((a,b)=>a+b,0)/trust.length,recorded_at:new Date().toISOString()});if(block===1){data.index=trials.findIndex(t=>t.id==='P4');pageTrial();}else{complete();}};}
+    function tlxItem(id,label,question,left,right){return `<div class="tlx-item"><div class="tlx-head">${label}</div><div class="tlx-question">${question}</div><div class="tlx-labels"><span>${left}</span><span>${right}</span></div><input id="tlx_${id}" type="range" min="1" max="20" step="1" value="10"><div class="tlx-value" id="tlx_${id}_value">10 / 20</div></div>`;}
+    function saveTrial(decision,rt,sart,uncertainty,trust){
+      const t=trials[data.index],conf=confidenceForTrial(t);
+      const blockOrder=t.type==='main'
+        ? trials.slice(0,data.index+1).filter(x=>x.type==='main'&&x.block===t.block).length
+        : '';
+      data.responses.push({
+        record_type:'trial',
+        participant_id:data.participantId,
+        assigned_condition:data.condition,
+        ...data.demographics,
+        trial_index:data.index+1,
+        trial_type:t.type,
+        block:t.block||'',
+        presentation_order_in_block:blockOrder,
+        scenario_id:t.id,
+        scenario_logic:t.logic,
+        image_filename:filenameForTrial(t),
+        confidence:conf?.value??'',
+        confidence_display:conf?String(conf.display).replace('&lt;','<').replace('&gt;','>'):'',
+        confidence_level:conf?.level||'',
+        decision,
+        reaction_time_ms:rt,
+        ...sart,
+        uncertainty_1_7:uncertainty,
+        trust_0_100:trust,
+        recorded_at:new Date().toISOString()
+      });
+    }
+    function advanceTrial(){
+      if(data.index===TOTAL_PRACTICE-1){pageStudyReady();return;}
+      const t=trials[data.index];
+      if(t?.type==='main'&&isLastMainTrialOfBlock(data.index)){pageNASA(t.block);return;}
+      if(t?.type==='practice2'&&t.id==='P5'){pageSecondSessionReady();return;}
+      data.index++;
+      data.index<trials.length?pageTrial():complete();
+    }
+    function complete(){app.innerHTML=shell(`<section class="complete"><h1>Study complete</h1><p>Thank you very much for your participation.</p><p class="muted">The researcher can download the recorded study data as a one-row-per-participant CSV file.</p><div class="actions" style="justify-content:center"><button class="button" id="download">Download CSV</button></div></section>`);document.getElementById('download').onclick=download;}
+    function message(title,text){app.innerHTML=shell(`<section class="complete"><h1>${esc(title)}</h1><p>${esc(text)}</p></section>`)}
+    function download(){
+      const wide={
+        participant_id:data.participantId,
+        assigned_condition:data.condition,
+        age:data.demographics.age??'',
+        gender:data.demographics.gender??'',
+        annual_miles:data.demographics.annual_miles??'',
+        unfamiliar_routes_percent:data.demographics.unfamiliar_routes_percent??'',
+        has_driven_public_roads_germany:data.demographics.has_driven_public_roads_germany??'',
+        approx_km_driven_public_roads_germany:data.demographics.approx_km_driven_public_roads_germany??''
+      };
+
+      const studyFiles=[
+        'Left-Turn-1.png','Red-Light-1.png','Roundabout-1.png','Right-1.png',
+        'Left-Turn-2.png','Red-Light-2.png','Roundabout-2.png','Right-2.png'
+      ];
+
+      for(const filename of studyFiles){
+        const r=data.responses.find(x=>x.record_type==='trial'&&x.trial_type==='main'&&x.image_filename===filename);
+        const p=safeFilenameKey(filename);
+        wide[`${p}_presentation_order_in_block`]=r?.presentation_order_in_block??'';
+        wide[`${p}_reaction_time_ms`]=r?.reaction_time_ms??'';
+        wide[`${p}_decision`]=r?.decision??'';
+        wide[`${p}_system_confidence_level`]=r?.confidence_level??'';
+        wide[`${p}_system_confidence_display`]=r?.confidence_display??'';
+        wide[`${p}_sart_demand_1_11`]=r?.sart_demand_1_11??'';
+        wide[`${p}_sart_supply_1_11`]=r?.sart_supply_1_11??'';
+        wide[`${p}_sart_understanding_1_11`]=r?.sart_understanding_1_11??'';
+        wide[`${p}_decision_confidence_1_11`]=r?.decision_confidence_1_11??'';
+      }
+
+      for(const block of [1,2]){
+        const tlx=data.responses.find(x=>x.record_type==='nasa_tlx'&&Number(x.block)===block);
+        wide[`block${block}_nasa_tlx_mental_demand_1_20`]=tlx?.nasa_tlx_mental_demand_1_20??'';
+        wide[`block${block}_nasa_tlx_physical_demand_1_20`]=tlx?.nasa_tlx_physical_demand_1_20??'';
+        wide[`block${block}_nasa_tlx_temporal_demand_1_20`]=tlx?.nasa_tlx_temporal_demand_1_20??'';
+        wide[`block${block}_nasa_tlx_performance_1_20`]=tlx?.nasa_tlx_performance_1_20??'';
+        wide[`block${block}_nasa_tlx_effort_1_20`]=tlx?.nasa_tlx_effort_1_20??'';
+        wide[`block${block}_nasa_tlx_frustration_1_20`]=tlx?.nasa_tlx_frustration_1_20??'';
+        wide[`block${block}_nasa_tlx_raw_mean_1_20`]=tlx?.nasa_tlx_raw_mean_1_20??'';
+
+        const tia=data.responses.find(x=>x.record_type==='tia'&&Number(x.block)===block);
+        wide[`block${block}_tia_interpreting_1_5`]=tia?.tia_interpreting_1_5??'';
+        wide[`block${block}_tia_reliable_1_5`]=tia?.tia_reliable_1_5??'';
+        wide[`block${block}_tia_malfunction_1_5`]=tia?.tia_malfunction_1_5??'';
+        wide[`block${block}_tia_complicated_tasks_1_5`]=tia?.tia_complicated_tasks_1_5??'';
+        wide[`block${block}_tia_sporadic_errors_1_5`]=tia?.tia_sporadic_errors_1_5??'';
+        wide[`block${block}_tia_capabilities_1_5`]=tia?.tia_capabilities_1_5??'';
+        wide[`block${block}_tia_trust_1_5`]=tia?.tia_trust_1_5??'';
+        wide[`block${block}_tia_rely_1_5`]=tia?.tia_rely_1_5??'';
+        wide[`block${block}_tia_reliability_competence_mean`]=tia?.tia_reliability_competence_mean??'';
+        wide[`block${block}_tia_trust_in_automation_mean`]=tia?.tia_trust_in_automation_mean??'';
+      }
+
+      const headers=Object.keys(wide);
+      const q=v=>`"${String(v??'').replaceAll('"','""')}"`;
+      const csv=[headers.map(q).join(','),headers.map(k=>q(wide[k])).join(',')].join('\n');
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+      const url=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=url;
+      a.download=`remote_operator_${data.participantId}_${data.condition}_wide.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    pageAccess();
+  </script>
+</body>
+</html>
